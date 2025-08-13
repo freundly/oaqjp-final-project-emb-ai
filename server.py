@@ -3,7 +3,7 @@ from emotion_detection import emotion_detector  # senin paket yolu
 
 app = Flask(__name__)
 
-@app.route('/emotionDetector', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def emotionDetector():
     if request.method == 'POST':
         text_to_analyze = request.form.get('text')  # formdan gelen veri
