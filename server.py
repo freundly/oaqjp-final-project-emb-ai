@@ -12,10 +12,15 @@ def index():
 @app.route("/emotionDetector", methods=["GET"])
 def detect_emotion():
     text_to_analyze = request.args.get("textToAnalyze", "")
-    if text_to_analyze:
-        result = emotion_detector(text_to_analyze)
-        return jsonify(result)
-    return jsonify({"error": "No text provided"})
+
+    # emotion_detector fonksiyonu artık boş veya hatalı girişleri yönetiyor
+    result = emotion_detector(text_to_analyze)
+
+    # dominant_emotion None ise kullanıcıya mesaj göster
+    if result.get("dominant_emotion") is None:
+        return jsonify({"error": "Invalid text! Please try again!"})
+
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,25 +1,48 @@
 import requests
+import json
 
-def emotion_detector(text_to_analyse):
+def emotion_detector(text_to_analyze):
+    if not text_to_analyze.strip():  # boş veya sadece boşluk
+        return {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
+
     url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
     headers = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
-    payload = { "raw_document": { "text": text_to_analyse } }
+    payload = {"raw_document": {"text": text_to_analyze}}
 
-    response = requests.post(url, headers=headers, json=payload)
-    data = response.json()
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 400:
+            return {
+                'anger': None,
+                'disgust': None,
+                'fear': None,
+                'joy': None,
+                'sadness': None,
+                'dominant_emotion': None
+            }
 
-    # Duygular burada
-    emotions = data['emotionPredictions'][0]['emotion']
+        data = response.json()
+        emotions = data['emotionPredictions'][0]['emotion']
 
-    # En baskın duyguyu bul
-    dominant_emotion = max(emotions, key=emotions.get)
+        dominant = max(emotions, key=emotions.get)
+        emotions['dominant_emotion'] = dominant
 
-    # Sonuç sözlüğü
-    return {
-        'anger': emotions.get('anger', 0),
-        'disgust': emotions.get('disgust', 0),
-        'fear': emotions.get('fear', 0),
-        'joy': emotions.get('joy', 0),
-        'sadness': emotions.get('sadness', 0),
-        'dominant_emotion': dominant_emotion
-    }
+        return emotions
+
+    except (requests.RequestException, KeyError, IndexError, json.JSONDecodeError):
+        # API hatalı yanıt dönerse veya boş/hatalı veri gelirse
+        return {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
