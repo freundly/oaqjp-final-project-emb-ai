@@ -1,5 +1,4 @@
 import requests
-import json
 
 def emotion_detector(text_to_analyse):
     url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
@@ -7,24 +6,20 @@ def emotion_detector(text_to_analyse):
     payload = { "raw_document": { "text": text_to_analyse } }
 
     response = requests.post(url, headers=headers, json=payload)
-    data = response.json()  # API yanıtını sözlüğe çevir
+    data = response.json()
 
-    # Watson API'nin döndürdüğü gerçek alan adlarını kontrol et
-    emotions = data['document_emotion']  # veya data['emotion'] gibi olabilir
-    anger = emotions.get('anger', 0)
-    disgust = emotions.get('disgust', 0)
-    fear = emotions.get('fear', 0)
-    joy = emotions.get('joy', 0)
-    sadness = emotions.get('sadness', 0)
+    # Duygular burada
+    emotions = data['emotionPredictions'][0]['emotion']
 
-    emotion_scores = {
-        "anger": anger,
-        "disgust": disgust,
-        "fear": fear,
-        "joy": joy,
-        "sadness": sadness
+    # En baskın duyguyu bul
+    dominant_emotion = max(emotions, key=emotions.get)
+
+    # Sonuç sözlüğü
+    return {
+        'anger': emotions.get('anger', 0),
+        'disgust': emotions.get('disgust', 0),
+        'fear': emotions.get('fear', 0),
+        'joy': emotions.get('joy', 0),
+        'sadness': emotions.get('sadness', 0),
+        'dominant_emotion': dominant_emotion
     }
-
-    dominant_emotion = max(emotion_scores, key=emotion_scores.get)
-    emotion_scores['dominant_emotion'] = dominant_emotion
-    return emotion_scores
